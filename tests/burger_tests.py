@@ -78,31 +78,46 @@ class TestBurger:
         assert self.burger.get_price() == expected_result
 
     
-    @pytest.mark.parametrize("bun_price, ingredient_price, expected_result", [
-        (None, [100], AttributeError),
-        (200, [None], AttributeError),
-        (200, None, TypeError),
-        (None, None, AttributeError)
-    ])
-    def test_get_price_for_different_invalid_values(self, bun_price, ingredient_price, expected_result):
-        
-        if bun_price is not None:
-            mock_bun = Mock()
-            mock_bun.get_price.return_value = bun_price
-            self.burger.set_buns(mock_bun)
+    def test_get_price_with_none_bun_price(self):
+        mock_bun = Mock()
+        mock_bun.get_price.return_value = None
+        self.burger.set_buns(mock_bun)
+    
+        mock_ingredient = Mock()
+        mock_ingredient.get_price.return_value = 100
+        self.burger.add_ingredient(mock_ingredient)
+    
+        with pytest.raises(TypeError):
+            self.burger.get_price()
 
-        if ingredient_price is not None:
-            for price in ingredient_price:
-                if price is not None:
-                    mock_ingredient = Mock()
-                    mock_ingredient.get_price.return_value = price
-                    self.burger.add_ingredient(mock_ingredient)
-                else:
-                    self.burger.ingredients.append(None)
-        else:
-            self.burger.ingredients = None
+    def test_get_price_with_none_ingredient_price(self):
+        mock_bun = Mock()
+        mock_bun.get_price.return_value = 200
+        self.burger.set_buns(mock_bun)
+    
+        mock_ingredient = Mock()
+        mock_ingredient.get_price.return_value = None
+        self.burger.add_ingredient(mock_ingredient)
+    
+        with pytest.raises(TypeError):
+            self.burger.get_price()
 
-        with pytest.raises(expected_result):
+    def test_get_price_with_ingredients_set_to_none(self):
+        mock_bun = Mock()
+        mock_bun.get_price.return_value = 200
+        self.burger.set_buns(mock_bun)
+        self.burger.ingredients = None
+    
+        with pytest.raises(TypeError):
+            self.burger.get_price()
+
+    def test_get_price_with_all_none(self):
+        mock_bun = Mock()
+        mock_bun.get_price.return_value = None
+        self.burger.set_buns(mock_bun)
+        self.burger.ingredients.append(None)
+    
+        with pytest.raises(TypeError):
             self.burger.get_price()
 
     @pytest.mark.parametrize("bun_name, bun_price, ingredients_data, expected_result", [
